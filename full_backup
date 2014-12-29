@@ -3,11 +3,14 @@
 set -o nounset
 set -e 
 
+### Setup your defauly root of directory
+DEF_ROOT='/root/server-back-scripts'
+
 ### Input parameters ###
 PERIOD=${1:-daily} 
+DIR_ROOT=${2:-$DEF_ROOT}
 
-### Setup your root of directory
-DIR_ROOT=$(pwd)
+cd $DIR_ROOT
 
 ### Directories ###
 DIR_BIN="${DIR_ROOT}/bin"
