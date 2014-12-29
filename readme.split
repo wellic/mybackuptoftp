@@ -1,0 +1,3 @@
+For split file please use
+cat filename.zip.-* >filename.zip
+or equivalent command
