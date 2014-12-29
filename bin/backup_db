@@ -1,0 +1,62 @@
+#!/bin/bash
+# Create individual SQL files for each database. These files
+# are imported automatically during an initial provision if
+# the databases exist per the import-sql.sh process.
+
+set -o nounset
+set -e 
+
+TYPE="DB"
+
+### Input parameters ###
+PERIOD=${1:-daily}
+NOW=${2:-$(date +"%y%m%d")}
+DIR_ROOT=${3:-.}
+
+### Directories ###
+DIR_BIN="${DIR_ROOT}/bin"
+DIR_CFG="${DIR_ROOT}/cfg"
+DIR_ARC="${DIR_ROOT}/arc"
+DIR_LOG="${DIR_ROOT}/log"
+
+### MySQL Setup ###
+DB_HOST=localhost
+DB_USER=root
+DB_PASS=root
+DB_EXCLUDE="${DIR_CFG}/db_excludes.lst"
+
+### System Setup ###
+MYSQLDUMP_OPT='--compress'
+
+ZIP_OPT=-mq9
+SORT_OPT=
+GREP_OPT="-v -f $DB_EXCLUDE -x"
+
+PASS=$(cat $DIR_CFG/encrypt.txt)
+
+#---------------------------------------------------
+[ ! -d $DIR_ARC ] && mkdir -p $DIR_ARC || :
+
+echo --- Start $0 ---
+echo $(dirname $0)
+echo --- See exists DBs ---
+DB_AUTH="-h ${DB_HOST} -u ${DB_USER} -p${DB_PASS}"
+echo "mysql -e 'show databases'"
+
+echo --- Dump ---
+mysql -e 'show databases' $DB_AUTH | sort $SORT_OPT | grep $GREP_OPT | \
+while read DB_NAME; 
+do
+  echo "Dumping: $DB_NAME"
+
+  BACKUP_FILE="${DIR_ARC}/${DB_NAME}.sql" 
+
+  ARC_NAME="${DB_NAME}.zip"
+  ARC="${DIR_ARC}/${ARC_NAME}"
+
+  mysqldump $DB_AUTH $MYSQLDUMP_OPT $DB_NAME > $BACKUP_FILE 
+  zip $ZIP_OPT $ARC $BACKUP_FILE -P $PASS
+
+  $DIR_BIN/move_file_to_remote $PERIOD $NOW $TYPE $ARC_NAME $DIR_ROOT
+  echo "Database $DB_NAME backed up..."; 
+done

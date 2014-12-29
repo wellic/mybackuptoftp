@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+### Input parameters ###
+PERIOD=${1:-daily} 
+
+### Setup your root of directory
+DIR_ROOT=$(pwd)
+
+### Directories ###
+DIR_BIN="${DIR_ROOT}/bin"
+DIR_CFG="${DIR_ROOT}/cfg"
+DIR_ARC="${DIR_ROOT}/arc"
+DIR_LOG="${DIR_ROOT}/log"
+
+NOW=$(date +"%y%m%d")
+
+#$DIR_BIN/prepare_remote $PERIOD_ARC
+
+#do all backup script
+SCRIPTS=' backup_db backup_data '
+for SCRIPT in $SCRIPTS;
+do 
+  echo "Executing: $SCRIPT"
+  $DIR_BIN/$SCRIPT $PERIOD $NOW $DIR_ROOT
+done
+
+exit 0

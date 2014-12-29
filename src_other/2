@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+die(){
+  local error=${1=Undefined error}
+  echo "$0 : $error"
+}
+
+die "File not found"
+die

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+### Setup your root of directory
+DIR_ROOT=$(pwd)
+
+### Directories ###
+DIR_BIN="${DIR_ROOT}/bin"
+DIR_CFG="${DIR_ROOT}/cfg"
+DIR_ARC="${DIR_ROOT}/arc"
+DIR_LOG="${DIR_ROOT}/log"
+
+### Input parameters ###
+tar -cvf tt | zip rrrr.zip -P <(cat $DIR_CFG/encrypt.txt)
