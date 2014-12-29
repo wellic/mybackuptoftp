@@ -20,7 +20,7 @@ DIR_ARC="${DIR_ROOT}/arc"
 DIR_LOG="${DIR_ROOT}/log"
 
 ### System Setup ###
-ZIP_OPT=-mq9
+ZIP_OPT=-mq9D
 
 PASS=$(cat $DIR_CFG/encrypt.txt)
 DIRS=$(cat "${DIR_CFG}/dirs.lst")
@@ -31,17 +31,21 @@ DIRS=$(cat "${DIR_CFG}/dirs.lst")
 echo --- Start $0 ---
 for DIR in $DIRS;
 do
+  if [ -d "$DIR" ] ;
+  then 
   DATA_NAME=$(basename "$DIR")
   echo "Backing: $DIR"
 
-  BACKUP_FILE="${DIR_ARC}/${DATA_NAME}.tar"
-
+  cd $DIR_ARC
+  BACKUP_FILE="${DATA_NAME}.tar"
   ARC_NAME="${DATA_NAME}.zip"
-  ARC="${DIR_ARC}/${ARC_NAME}"
 
   tar cf $BACKUP_FILE $DIR
-  zip $ZIP_OPT $ARC $BACKUP_FILE -P $PASS
+  rm -f "$ARC_NAME"
+  zip $ZIP_OPT $ARC_NAME $BACKUP_FILE -P $PASS
 
+  cd -
   $DIR_BIN/move_file_to_remote $PERIOD $NOW $TYPE $ARC_NAME $DIR_ROOT
   echo "Dir $DIR backed up..."; 
+  fi
 done

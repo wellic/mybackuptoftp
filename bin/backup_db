@@ -49,14 +49,15 @@ while read DB_NAME;
 do
   echo "Dumping: $DB_NAME"
 
-  BACKUP_FILE="${DIR_ARC}/${DB_NAME}.sql" 
-
+  cd $DIR_ARC
+  BACKUP_FILE="${DB_NAME}.sql" 
   ARC_NAME="${DB_NAME}.zip"
-  ARC="${DIR_ARC}/${ARC_NAME}"
 
   mysqldump $DB_AUTH $MYSQLDUMP_OPT $DB_NAME > $BACKUP_FILE 
-  zip $ZIP_OPT $ARC $BACKUP_FILE -P $PASS
+  rm -f "$ARC_NAME"
+  zip $ZIP_OPT $ARC_NAME $BACKUP_FILE -P $PASS
 
+  cd -
   $DIR_BIN/move_file_to_remote $PERIOD $NOW $TYPE $ARC_NAME $DIR_ROOT
   echo "Database $DB_NAME backed up..."; 
 done
