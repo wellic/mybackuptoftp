@@ -30,7 +30,7 @@ FULLPATH="${FTPD}/${PERIOD}/${NOW}/${TYPE}"
 echo $FULLPATH 
 
 cd $DIR_ARC
-split --bytes=500M "$FNAME" "$FNAME.-"
+split -d --bytes=1G "$FNAME" "$FNAME."
 rm -f "$FNAME"
 cd -
 
@@ -39,6 +39,6 @@ $FTP -u $FTPU,$FTPP $FTPS<<EOF
 mkdir -p "${FULLPATH}"
 cd "${FULLPATH}"
 lcd "$DIR_ARC"
-mput -E -c "$FNAME.-*"
+mput -E -c "$FNAME.*"
 quit
 EOF
