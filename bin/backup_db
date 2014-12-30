@@ -22,7 +22,7 @@ DIR_LOG="${DIR_ROOT}/log"
 ### MySQL Setup ###
 DB_HOST=localhost
 DB_USER=root
-DB_PASS=root
+DB_PASS=Q_H9N_wzL76tCE
 DB_EXCLUDE="${DIR_CFG}/db_excludes.lst"
 
 ### System Setup ###

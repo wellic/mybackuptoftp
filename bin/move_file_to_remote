@@ -30,7 +30,7 @@ FULLPATH="${FTPD}/${PERIOD}/${NOW}/${TYPE}"
 echo $FULLPATH 
 
 cd $DIR_ARC
-split --bytes=200M "$FNAME" "$FNAME.-"
+split --bytes=500M "$FNAME" "$FNAME.-"
 rm -f "$FNAME"
 cd -
 
