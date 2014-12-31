@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+echo
+echo '------------------------------------------------'
+echo "--- Start $0"
+echo '------------------------------------------------'
+
+### Setup your defauly root of directory
+DEF_ROOT='/root/server-back-scripts'
+
+### Input parameters ###
+YEAR=${1:-$(date +"%y")}
+MONTH=${2:-$(date +"%m")}
+DAY=${3:-$(date +"%d")}
+WEEK=${4:-$(date +"%w")}
+DIR_ROOT=${5:-$DEF_ROOT}
+
+$DIR_ROOT/full_backup $YEAR $MONTH $DAY $WEEK "$DIR_ROOT"

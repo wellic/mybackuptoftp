@@ -3,15 +3,14 @@
 set -o nounset
 set -e 
 
-### Setup your defauly root of directory
-DEF_ROOT='/root/server-back-scripts'
+echo '--- Start $0 ---'
 
 ### Input parameters ###
-YEAR=${1:-$(date +"%y")}
-MONTH=${2:-$(date +"%m")}
-DAY=${3:-$(date +"%d")}
-WEEK=${4:-$(date +"%w")}
-DIR_ROOT=${5:-$DEF_ROOT}
+YEAR=$1
+MONTH=$2
+DAY=$3
+WEEK=$4
+DIR_ROOT=$5
 
 ### Prepare date and period information
 PERIOD='daily'
@@ -22,14 +21,15 @@ if [[ "$DAY" -eq 1 ]]; then
   PERIOD='monthly'
 fi
 NOW="${YEAR}${MONTH}${DAY}"
+echo "YEAR=${YEAR} MONTH=${MONTH} DAY=${DAY} WEEK=${WEEK} NOW=${NOW}"
 
 ### Directories ###
 cd $DIR_ROOT
+echo "DIR_ROOT: '${DIR_ROOT}' Current dir: '$(pwd)'"
 DIR_BIN="${DIR_ROOT}/bin"
 DIR_CFG="${DIR_ROOT}/cfg"
 DIR_ARC="${DIR_ROOT}/arc"
 DIR_LOG="${DIR_ROOT}/log"
-
 
 #$DIR_BIN/prepare_remote $PERIOD
 
@@ -38,7 +38,7 @@ SCRIPTS=' backup_db backup_data '
 for SCRIPT in $SCRIPTS;
 do 
   echo "Executing: $SCRIPT"
+  echo $DIR_BIN/$SCRIPT $PERIOD $NOW $DIR_ROOT
   $DIR_BIN/$SCRIPT $PERIOD $NOW $DIR_ROOT
 done
 
-exit 0
