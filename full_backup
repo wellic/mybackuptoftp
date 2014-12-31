@@ -7,20 +7,31 @@ set -e
 DEF_ROOT='/root/server-back-scripts'
 
 ### Input parameters ###
-PERIOD=${1:-daily} 
-DIR_ROOT=${2:-$DEF_ROOT}
+YEAR=${1:-$(date +"%y")}
+MONTH=${2:-$(date +"%m")}
+DAY=${3:-$(date +"%d")}
+WEEK=${4:-$(date +"%w")}
+DIR_ROOT=${5:-$DEF_ROOT}
 
-cd $DIR_ROOT
+### Prepare date and period information
+PERIOD='daily'
+if [[ "$WEEK" -eq 0 ]]; then
+  PERIOD='weekly'
+fi
+if [[ "$DAY" -eq 1 ]]; then
+  PERIOD='montly'
+fi
+NOW="${YEAR}${MONTH}${DAY}"
 
 ### Directories ###
+cd $DIR_ROOT
 DIR_BIN="${DIR_ROOT}/bin"
 DIR_CFG="${DIR_ROOT}/cfg"
 DIR_ARC="${DIR_ROOT}/arc"
 DIR_LOG="${DIR_ROOT}/log"
 
-NOW=$(date +"%y%m%d")
 
-#$DIR_BIN/prepare_remote $PERIOD_ARC
+#$DIR_BIN/prepare_remote $PERIOD
 
 #do all backup script
 SCRIPTS=' backup_db backup_data '
