@@ -19,7 +19,7 @@ if [[ "$WEEK" -eq 0 ]]; then
   PERIOD='weekly'
 fi
 if [[ "$DAY" -eq 1 ]]; then
-  PERIOD='montly'
+  PERIOD='monthly'
 fi
 NOW="${YEAR}${MONTH}${DAY}"
 
