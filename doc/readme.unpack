@@ -1,0 +1,2 @@
+1) cat filename.sql.gz.gpg.* | gpg -d | gzip -d >filename.sql
+2) cat filename.tgz.gpg.* | gpg -d | tar xz -C filename

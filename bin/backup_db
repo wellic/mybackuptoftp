@@ -3,6 +3,9 @@
 # are imported automatically during an initial provision if
 # the databases exist per the import-sql.sh process.
 
+echo
+echo "--- Start $0"
+
 set -o nounset
 set -e 
 
@@ -25,39 +28,42 @@ DB_USER=root
 DB_PASS=Q_H9N_wzL76tCE
 DB_EXCLUDE="${DIR_CFG}/db_excludes.lst"
 
+### GPG settings ###
+GPG_USERID=$(cat $DIR_CFG/gpg_userid.txt)
+GPG_OPT="-e -r"
+
+### Split settings ###
+SPLIT_OPT="-d -a 3 -b $(cat $DIR_CFG/split_size.txt)"
+
 ### System Setup ###
 MYSQLDUMP_OPT='--compress'
-
-ZIP_OPT=-mq9
-SORT_OPT=
 GREP_OPT="-v -f $DB_EXCLUDE -x"
-
-PASS=$(cat $DIR_CFG/encrypt.txt)
+GZIP_OPT=-c9
 
 #---------------------------------------------------
 [ ! -d $DIR_ARC ] && mkdir -p $DIR_ARC || :
 
-echo --- Start $0 ---
 echo $(dirname $0)
 echo --- See exists DBs ---
 DB_AUTH="-h ${DB_HOST} -u ${DB_USER} -p${DB_PASS}"
 echo "mysql -e 'show databases'"
 
 echo --- Dump ---
-mysql -e 'show databases' $DB_AUTH | sort $SORT_OPT | grep $GREP_OPT | \
+mysql -e 'show databases' $DB_AUTH | sort | grep $GREP_OPT | \
 while read DB_NAME; 
 do
-  echo "Dumping: $DB_NAME"
+  echo
+  echo "Dumping: $DB_NAME" 
+  BACKUP_FILE="${DB_NAME}.sql.gz.gpg" 
 
   cd $DIR_ARC
-  BACKUP_FILE="${DB_NAME}.sql" 
-  ARC_NAME="${DB_NAME}.zip"
-
-  mysqldump $DB_AUTH $MYSQLDUMP_OPT $DB_NAME > $BACKUP_FILE 
-  rm -f "$ARC_NAME"
-  zip $ZIP_OPT $ARC_NAME $BACKUP_FILE -P $PASS
-
+  mysqldump $DB_AUTH $MYSQLDUMP_OPT $DB_NAME \
+    | gzip $GZIP_OPT \
+    | gpg $GPG_OPT "$GPG_USERID" \
+    | split $SPLIT_OPT - "${BACKUP_FILE}."
   cd -
-  $DIR_BIN/move_file_to_remote $PERIOD $NOW $TYPE $ARC_NAME $DIR_ROOT
+
+  $DIR_BIN/move_file_to_remote $PERIOD $NOW $TYPE $BACKUP_FILE $DIR_ROOT
   echo "Database $DB_NAME backed up..."; 
+
 done

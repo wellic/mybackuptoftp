@@ -3,6 +3,9 @@
 # are imported automatically during an initial provision if
 # the databases exist per the import-sql.sh process.
 
+echo
+echo "--- Start $0"
+
 set -o nounset
 set -e 
 
@@ -19,33 +22,36 @@ DIR_CFG="${DIR_ROOT}/cfg"
 DIR_ARC="${DIR_ROOT}/arc"
 DIR_LOG="${DIR_ROOT}/log"
 
-### System Setup ###
-ZIP_OPT=-mq9D
+### GPG settings ###
+GPG_USERID=$(cat $DIR_CFG/gpg_userid.txt)
+GPG_OPT="-e -r"
 
-PASS=$(cat $DIR_CFG/encrypt.txt)
+### Split settings ###
+SPLIT_OPT="-d -a 3 -b $(cat $DIR_CFG/split_size.txt)"
+
+### System Setup ###
 DIRS=$(cat "${DIR_CFG}/dirs.lst")
+GZIP_OPT=-c9
 
 #---------------------------------------------------
 [ ! -d $DIR_ARC ] && mkdir -p $DIR_ARC || :
 
-echo --- Start $0 ---
 for DIR in $DIRS;
 do
   if [ -d "$DIR" ] ;
   then 
   DATA_NAME=$(basename "$DIR")
+  echo 
   echo "Backing: $DIR"
+  BACKUP_FILE="${DATA_NAME}.tgz.gpg" 
 
   cd $DIR_ARC
-  BACKUP_FILE="${DATA_NAME}.tar"
-  ARC_NAME="${DATA_NAME}.zip"
-
-  tar cf $BACKUP_FILE $DIR
-  rm -f "$ARC_NAME"
-  zip $ZIP_OPT $ARC_NAME $BACKUP_FILE -P $PASS
-
+  tar cz $DIR                    \
+    | gpg $GPG_OPT "$GPG_USERID" \
+    | split $SPLIT_OPT - "${BACKUP_FILE}."
   cd -
-  $DIR_BIN/move_file_to_remote $PERIOD $NOW $TYPE $ARC_NAME $DIR_ROOT
+
+  $DIR_BIN/move_file_to_remote $PERIOD $NOW $TYPE $BACKUP_FILE $DIR_ROOT
   echo "Dir $DIR backed up..."; 
   fi
-done
+done    

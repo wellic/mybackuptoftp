@@ -3,7 +3,7 @@
 set -o nounset
 set -e 
 
-echo '--- Start $0 ---'
+echo "--- Start $0"
 
 ### Input parameters ###
 YEAR=$1
@@ -34,6 +34,8 @@ DIR_LOG="${DIR_ROOT}/log"
 #$DIR_BIN/prepare_remote $PERIOD
 
 #do all backup script
+#SCRIPTS=' backup_db  '
+#SCRIPTS=' backup_data '
 SCRIPTS=' backup_db backup_data '
 for SCRIPT in $SCRIPTS;
 do 

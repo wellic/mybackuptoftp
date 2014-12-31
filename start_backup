@@ -5,8 +5,10 @@ set -e
 
 echo
 echo '------------------------------------------------'
-echo "--- Start $0"
+echo "$0"
+echo 'Start:' $(date +"%D %T")
 echo '------------------------------------------------'
+echo
 
 ### Setup your defauly root of directory
 DEF_ROOT='/root/server-back-scripts'
@@ -19,3 +21,9 @@ WEEK=${4:-$(date +"%w")}
 DIR_ROOT=${5:-$DEF_ROOT}
 
 $DIR_ROOT/full_backup $YEAR $MONTH $DAY $WEEK "$DIR_ROOT"
+echo
+echo '------------------------------------------------'
+echo "$0"
+echo 'Finish:' $(date +"%D %T")
+echo '------------------------------------------------'
+echo
