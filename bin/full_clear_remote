@@ -8,9 +8,9 @@ echo "--- Start $0"
 set -o nounset
 set -e 
 
-PERIOD=${1:-daily}
 EMPTY=""
-NOW=${1:-${EMPTY}}
+PERIOD=${1:-daily}
+NOW=${2:-${EMPTY}}
 
 ### FTP server Setup ###
 FTPD='/GREY_1TB/ToolkitVault-server-backups'
@@ -21,6 +21,9 @@ FTP_OPT='-c -E'
 FTP="$(which lftp)"
 
 #Start FTP backup using ncftp
+echo $FTP -u $FTPU,$FTPP $FTPS
+echo rm -rf $FTPD/$PERIOD/$NOW
+
 $FTP -u $FTPU,$FTPP $FTPS<<EOF
 rm -rf $FTPD/$PERIOD/$NOW
 quit
