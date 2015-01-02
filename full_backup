@@ -23,9 +23,10 @@ DIR_LOG="${DIR_ROOT}/log"
 ### Prepare date and period information
 PERIOD=$($DIR_BIN/get_period_now $YEAR $MONTH $DAY $WEEK)
 NOW="${YEAR}${MONTH}${DAY}"
-echo "YEAR=${YEAR} MONTH=${MONTH} DAY=${DAY} WEEK=${WEEK} PERIOD=${PERIOD} NOW=${NOW}"
+CNT_KEEP=$($DIR_BIN/cnt_keep_by_period $PERIOD)
+echo "YEAR=${YEAR} MONTH=${MONTH} DAY=${DAY} WEEK=${WEEK} PERIOD=${PERIOD} NOW=${NOW} KEEP=$CNT_KEEP"
 
-#$DIR_BIN/prepare_remote $PERIOD
+$DIR_BIN/prepare_remote $PERIOD $CNT_KEEP
 
 #do all backup script
 #SCRIPTS=' backup_db  '

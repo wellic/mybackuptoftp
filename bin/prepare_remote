@@ -1,0 +1,62 @@
+#!/bin/bash
+# Create individual SQL files for each database. These files
+# are imported automatically during an initial provision if
+# the databases exist per the import-sql.sh process.
+
+echo
+echo "--- Start $0 $*"
+
+set -o nounset
+set -e 
+
+if [[ $# -ne 2 ]]; then
+  echo "Usage: $0 NAME_OF_PERIOD CNT_KEEP"
+  exit 1
+fi
+
+PERIOD=$1
+CNT_KEEP=$2
+
+### FTP server Setup ###
+FTPD='/GREY_1TB/ToolkitVault-server-backups'
+FTPS='office.giantleaplab.com'
+FTPU='tv-backuper'
+FTPP='xn->52s4_dAHND#4'
+FTP_OPT='-c -E'
+FTP="$(which lftp)"
+
+CHECK_DIR="$FTPD/$PERIOD"
+#CHECK_DIR="$FTPD/daily/150102/DB"
+
+#Start FTP backup using ncftp
+declare -a DIRS=$($FTP -u "$FTPU,$FTPP" $FTPS<<EOF
+mkdir -p "$CHECK_DIR"
+recls -1 --sort=name $CHECK_DIR
+quit
+EOF
+)
+
+#found keeping dir
+if [[ ! -z "$DIRS" ]]; then echo 'Found dirs:'; fi
+IND=$((-$CNT_KEEP))
+for DIR in $DIRS;
+do 
+  IND=$((IND+1))
+  echo "$IND: $DIR"
+done
+
+#remove dirs
+CNT=0
+for DIR in $DIRS;
+do 
+  CNT=$(($CNT+1))
+  if [[ $CNT -gt $IND ]]; then 
+    break;
+  fi
+  echo "Try clear $CNT: $DIR"
+  $FTP -u $FTPU,$FTPP $FTPS<<EOF
+  rm -rf "$DIR"
+  quit
+EOF
+
+done 

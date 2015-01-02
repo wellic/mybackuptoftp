@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+### Input parameters ###
+PERIOD=${1:-test}
+
+CNT=0
+case "$PERIOD" in
+  daily   ) CNT=6 ;;
+  weekly  ) CNT=4 ;;
+  monthly ) CNT=3 ;;
+esac
+
+echo $CNT
