@@ -9,7 +9,7 @@ echo "--- Start $0"
 set -o nounset
 set -e 
 
-TYPE="DATA"
+TYPE="data"
 
 ### Input parameters ###
 PERIOD=${1:-daily}
@@ -53,7 +53,8 @@ do
   cd -
 
   $DIR_BIN/move_file_to_remote $PERIOD $NOW $TYPE $BACKUP_FILE $DIR_ROOT
-  echo "Dir $DIR backed up..."; 
+  echo
+  echo "Dir $DIR backed up..."
   fi
 done    
 
