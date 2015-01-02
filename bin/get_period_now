@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+### Input parameters ###
+YEAR=$1
+MONTH=$2
+DAY=$3
+WEEK=$4
+
+### Prepare date and period information
+PERIOD='daily'
+
+if [[ "$WEEK" -eq 0 ]]; then
+  PERIOD='weekly'
+fi
+
+if [[ "$DAY" -eq 1 ]]; then
+  PERIOD='monthly'
+fi
+
+if [[ $(whoami) == 'wellic' ]]; then
+  PERIOD='test'
+fi
+
+echo $PERIOD

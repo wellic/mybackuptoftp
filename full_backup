@@ -12,17 +12,6 @@ DAY=$3
 WEEK=$4
 DIR_ROOT=$5
 
-### Prepare date and period information
-PERIOD='daily'
-if [[ "$WEEK" -eq 0 ]]; then
-  PERIOD='weekly'
-fi
-if [[ "$DAY" -eq 1 ]]; then
-  PERIOD='monthly'
-fi
-NOW="${YEAR}${MONTH}${DAY}"
-echo "YEAR=${YEAR} MONTH=${MONTH} DAY=${DAY} WEEK=${WEEK} NOW=${NOW}"
-
 ### Directories ###
 cd $DIR_ROOT
 echo "DIR_ROOT: '${DIR_ROOT}' Current dir: '$(pwd)'"
@@ -30,6 +19,11 @@ DIR_BIN="${DIR_ROOT}/bin"
 DIR_CFG="${DIR_ROOT}/cfg"
 DIR_ARC="${DIR_ROOT}/arc"
 DIR_LOG="${DIR_ROOT}/log"
+
+### Prepare date and period information
+PERIOD=$($DIR_BIN/get_period_now $YEAR $MONTH $DAY $WEEK)
+NOW="${YEAR}${MONTH}${DAY}"
+echo "YEAR=${YEAR} MONTH=${MONTH} DAY=${DAY} WEEK=${WEEK} PERIOD=${PERIOD} NOW=${NOW}"
 
 #$DIR_BIN/prepare_remote $PERIOD
 

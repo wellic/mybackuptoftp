@@ -3,6 +3,8 @@
 set -o nounset
 set -e 
 
+MAILTO='hello@giantleaplab.com'
+
 echo
 echo '------------------------------------------------'
 echo "$0"
@@ -13,14 +15,29 @@ echo
 ### Setup your defauly root of directory
 DEF_ROOT='/root/server-back-scripts'
 
-### Input parameters ###
-YEAR=${1:-$(date +"%y")}
-MONTH=${2:-$(date +"%m")}
-DAY=${3:-$(date +"%d")}
-WEEK=${4:-$(date +"%w")}
-DIR_ROOT=${5:-$DEF_ROOT}
+START_DIR=$PWD
 
-$DIR_ROOT/full_backup $YEAR $MONTH $DAY $WEEK "$DIR_ROOT"
+if [[ -d "$DEF_ROOT/bin" && -d "$DEF_ROOT/cfg" ]]; 
+then
+
+  cd "$DEF_ROOT"
+
+  ### Input parameters ###
+  YEAR=${1:-$(date +"%y")}
+  MONTH=${2:-$(date +"%m")}
+  DAY=${3:-$(date +"%d")}
+  WEEK=${4:-$(date +"%w")}
+  DIR_ROOT=${5:-$DEF_ROOT}
+
+  $DIR_ROOT/full_backup $YEAR $MONTH $DAY $WEEK "$DIR_ROOT"
+  
+else
+  echo 'It war error when backup. Check start directory.' | mail -S 'Error' $MAILTO
+fi
+
+cd "$START_DIR"
+
+
 echo
 echo '------------------------------------------------'
 echo "$0"
