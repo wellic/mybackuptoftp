@@ -3,6 +3,8 @@
 set -o nounset
 set -e 
 
+TEST_USER='wellic'
+
 ### Input parameters ###
 YEAR=$1
 MONTH=$2
@@ -20,7 +22,7 @@ if [[ "$DAY" -eq 1 ]]; then
   PERIOD='monthly'
 fi
 
-if [[ $(whoami) == 'wellic' ]]; then
+if [[ $(whoami) == $TEST_USER ]]; then
   PERIOD='test'
 fi
 
