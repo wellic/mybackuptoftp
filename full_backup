@@ -38,3 +38,4 @@ do
   $DIR_BIN/$SCRIPT $PERIOD $NOW $DIR_ROOT
 done
 
+exit 0

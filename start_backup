@@ -3,7 +3,9 @@
 set -o nounset
 set -e 
 
-MAILTO='hello@giantleaplab.com'
+MAIL_TO='hello@giantleaplab.com'
+ERROR_FILE='backup.error'
+MSG_ERROR='Error! Check backup'
 
 echo
 echo '------------------------------------------------'
@@ -21,7 +23,7 @@ if [[ -d "$DEF_ROOT/bin" && -d "$DEF_ROOT/cfg" ]];
 then
 
   cd "$DEF_ROOT"
-
+  
   ### Input parameters ###
   YEAR=${1:-$(date +"%y")}
   MONTH=${2:-$(date +"%m")}
@@ -29,10 +31,19 @@ then
   WEEK=${4:-$(date +"%w")}
   DIR_ROOT=${5:-$DEF_ROOT}
 
+  DIR_BIN="${DIR_ROOT}/bin"
+  DIR_CFG="${DIR_ROOT}/cfg"
+  DIR_ARC="${DIR_ROOT}/arc"
+  DIR_LOG="${DIR_ROOT}/log"
+
   $DIR_ROOT/full_backup $YEAR $MONTH $DAY $WEEK "$DIR_ROOT"
-  
+
+  if [[ -f "${DIR_LOG}/${ERROR_FILE}" ]] ; then
+    cat "$DIR_ROOT/$ERROR_FILE" | mail -s "$ERROR_MESS" "$MAIL_TO"
+  fi
+
 else
-  echo 'It war error when backup. Check start directory.' | mail -S 'Error' $MAILTO
+  echo 'It war error when backup. Check start directory.' | mail -s "$ERROR_MESS" "$MAIL_TO"
 fi
 
 cd "$START_DIR"
