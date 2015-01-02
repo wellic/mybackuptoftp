@@ -8,9 +8,17 @@ echo "--- Start $0"
 set -o nounset
 set -e 
 
-EMPTY=""
-PERIOD=${1:-daily}
-NOW=${2:-${EMPTY}}
+print_help() {
+  echo "Usage: $0 NAME_OF_PERIOD [yymmdd]"
+}
+
+if [[ $# -eq 0 ]]; then
+  print_help
+  exit 1
+fi
+
+PERIOD=$1
+NOW=${2:-""}
 
 ### FTP server Setup ###
 FTPD='/GREY_1TB/ToolkitVault-server-backups'
@@ -20,11 +28,18 @@ FTPP='xn->52s4_dAHND#4'
 FTP_OPT='-c -E'
 FTP="$(which lftp)"
 
+REMOVE_DIR="$FTPD/$PERIOD"
+if [[ ! -z $NOW ]]; then
+  REMOVE_DIR="${REMOVE_DIR}/${NOW}"
+fi 
+
 #Start FTP backup using ncftp
-echo $FTP -u $FTPU,$FTPP $FTPS
-echo rm -rf $FTPD/$PERIOD/$NOW
+echo "$FTP -u $FTPU,**** $FTPS"
+echo "rm -rf $REMOVE_DIR"
 
 $FTP -u $FTPU,$FTPP $FTPS<<EOF
-rm -rf $FTPD/$PERIOD/$NOW
+rm -rf "$REMOVE_DIR"
 quit
 EOF
+
+exit 0

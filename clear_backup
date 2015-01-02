@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+echo "--- Start $0"
+
+MODE_CLEAR="help"
+if [[ $# -gt 0 ]]; then
+  MODE_CLEAR="$1"
+  if [[ $1 =~ [0-9]{6} ]]; then
+    MODE_CLEAR='force'
+    DATE=$1
+  fi
+fi
+
+DIR_BIN='./bin'
+
+YEAR=$(date +"%y")
+MONTH=$(date +"%m")
+DAY=$(date +"%d")
+WEEK=$(date +"%w")
+
+PERIOD=$( $DIR_BIN/get_period_now $YEAR $MONTH $DAY $WEEK )
+NOW="${YEAR}${MONTH}${DAY}"
+
+case $MODE_CLEAR in 
+        "full")
+                echo $DIR_BIN/clear_remote $PERIOD
+                     $DIR_BIN/clear_remote $PERIOD
+                ;;
+     "current") 
+                echo $DIR_BIN/clear_remote $PERIOD ${NOW}
+                     $DIR_BIN/clear_remote $PERIOD ${NOW}  
+                ;;
+       "force") 
+                echo $DIR_BIN/clear_remote $PERIOD ${DATE}
+                     $DIR_BIN/clear_remote $PERIOD ${DATE}
+                ;;
+             *) 
+                echo "Usage: $0 { full | current | yymmdd }"  
+                exit 1
+                ;;
+esac
+
+exit 0
+
+
+
