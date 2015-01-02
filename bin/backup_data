@@ -30,8 +30,9 @@ GPG_OPT="-e -r"
 SPLIT_OPT="-d -a 3 -b $(cat $DIR_CFG/split_size.txt)"
 
 ### System Setup ###
-DIRS=$(cat "${DIR_CFG}/dirs.lst")
 GZIP_OPT=-c9
+DIRS=$(cat "${DIR_CFG}/dirs_${PERIOD}.lst")
+echo "Loaded list directories from ${DIR_CFG}/dirs_${PERIOD}.lst"
 
 #---------------------------------------------------
 [ ! -d $DIR_ARC ] && mkdir -p $DIR_ARC || :
@@ -55,3 +56,5 @@ do
   echo "Dir $DIR backed up..."; 
   fi
 done    
+
+exit 0
