@@ -4,7 +4,7 @@ set -o nounset
 set -e 
 
 MAIL_TO='hello@giantleaplab.com'
-ERROR_FILE='backup.error'
+ERROR_FILE='backup_error.log'
 MSG_ERROR='Error! Check backup'
 
 echo
@@ -36,10 +36,12 @@ then
   DIR_ARC="${DIR_ROOT}/arc"
   DIR_LOG="${DIR_ROOT}/log"
 
+  rm -f "$DIR_LOG"/"$ERROR_FILE"
+
   $DIR_ROOT/full_backup $YEAR $MONTH $DAY $WEEK "$DIR_ROOT"
 
   if [[ -f "${DIR_LOG}/${ERROR_FILE}" ]] ; then
-    cat "$DIR_ROOT/$ERROR_FILE" | mail -s "$ERROR_MESS" "$MAIL_TO"
+    cat "$DIR_LOG"/"$ERROR_FILE" | mail -s "$ERROR_MESS" "$MAIL_TO"
   fi
 
 else
