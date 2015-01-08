@@ -73,7 +73,7 @@ do
   BACKUP_FILE="${DATA_NAME}${SUFFIX}.tgz.gpg" 
 
   cd $DIR_ARC
-  tar --total --listed-incremental="$FNAME_SNAPSHOT" -czp $DIR \
+  tar --ignore-failed-read --total --listed-incremental="$FNAME_SNAPSHOT" -czp $DIR \
     | gpg $GPG_OPT "$GPG_USERID" \
     | split $SPLIT_OPT - "${BACKUP_FILE}."
   cd -
