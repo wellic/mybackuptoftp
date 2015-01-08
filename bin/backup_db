@@ -4,17 +4,28 @@
 # the databases exist per the import-sql.sh process.
 
 echo
-echo "--- Start $0"
+echo "--- Start $0 $*"
 
 set -o nounset
 set -e 
 
 TYPE="db"
 
+CNT_PARAMS=6
+if [[ $# -lt $CNT_PARAMS ]] ; then 
+  echo "Error!!! Must be $CNT_PARAMS parameters"
+  exit 1
+fi
+
 ### Input parameters ###
-PERIOD=${1:-daily}
-NOW=${2:-$(date +"%y%m%d")}
-DIR_ROOT=${3:-.}
+PERIOD=$1
+YEAR=$2
+MONTH=$3
+DAY=$4
+WEEK=$5
+DIR_ROOT=$6
+
+NOW="${YEAR}${MONTH}"
 
 ### Directories ###
 DIR_BIN="${DIR_ROOT}/bin"
@@ -63,7 +74,7 @@ do
     | split $SPLIT_OPT - "${BACKUP_FILE}."
   cd -
 
-  $DIR_BIN/move_file_to_remote $PERIOD $NOW $TYPE $BACKUP_FILE $DIR_ROOT
+  $DIR_BIN/move_file_to_remote $PERIOD $NOW $DAY $TYPE $BACKUP_FILE $DIR_ROOT
   echo
   echo "Database $DB_NAME backed up..."
 

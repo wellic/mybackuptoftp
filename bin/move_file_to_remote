@@ -5,17 +5,24 @@
 
 
 echo
-echo "--- Start $0"
+echo "--- Start $0 $*"
 
 set -o nounset
 set -e 
 
+CNT_PARAMS=6
+if [[ $# -lt $CNT_PARAMS ]] ; then 
+  echo "Error!!! Must be $CNT_PARAMS parameters"
+  exit 1
+fi
+
 ### Input parameters ###
 PERIOD=$1
 NOW=$2
-TYPE=$3
-FNAME=$4
-DIR_ROOT=$5
+DAY=$3
+TYPE=$4
+FNAME=$5
+DIR_ROOT=$6
 
 ### FTP server Setup ###
 FTPD='/GREY_1TB/ToolkitVault-server-backups'
@@ -30,7 +37,7 @@ DIR_CFG="${DIR_ROOT}/cfg"
 DIR_ARC="${DIR_ROOT}/arc"
 DIR_LOG="${DIR_ROOT}/log"
 
-FULLPATH="${FTPD}/${PERIOD}/${NOW}/${TYPE}"
+FULLPATH="${FTPD}/${PERIOD}/${NOW}/${DAY}/${TYPE}"
 echo "Copy to remote $FULLPATH/$FNAME.*"
 
 #Start FTP backup using ncftp

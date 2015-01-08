@@ -11,16 +11,28 @@ set -e
 
 TYPE="data"
 
+CNT_PARAMS=6
+if [[ $# -lt $CNT_PARAMS ]] ; then 
+  echo "Error!!! Must be $CNT_PARAMS parameters"
+  exit 1
+fi
+
 ### Input parameters ###
-PERIOD=${1:-daily}
-NOW=${2:-$(date +"%y%m%d")}
-DIR_ROOT=${3:-.}
+PERIOD=$1
+YEAR=$2
+MONTH=$3
+DAY=$4
+WEEK=$5
+DIR_ROOT=$6
+
+NOW="${YEAR}${MONTH}"
 
 ### Directories ###
 DIR_BIN="${DIR_ROOT}/bin"
 DIR_CFG="${DIR_ROOT}/cfg"
 DIR_ARC="${DIR_ROOT}/arc"
 DIR_LOG="${DIR_ROOT}/log"
+DIR_SNAP="${DIR_ROOT}/snapshots"
 
 ### GPG settings ###
 GPG_USERID=$(cat $DIR_CFG/gpg_userid.txt)
@@ -42,17 +54,31 @@ do
   if [ -d "$DIR" ] ;
   then 
   DATA_NAME=$(basename "$DIR")
+
+  FNAME_SNAPSHOT="${DIR_SNAP}/${DATA_NAME}.snapshot"
+  echo "Snapshot: $FNAME_SNAPSHOT"
+
+  if [[ "${DAY}" = '01' || "${WEEK}" -eq 0 ]] ; then
+    rm -f "$FNAME_SNAPSHOT"
+  fi
+
+  SUFFIX=".${DAY}"
+  if [[ ! -f "$FNAME_SNAPSHOT" ]] ; then
+    SUFFIX="${SUFFIX}.full"
+    echo 'Snapshot will be created'
+  fi
+
   echo 
   echo "Backing: $DIR"
-  BACKUP_FILE="${DATA_NAME}.tgz.gpg" 
+  BACKUP_FILE="${DATA_NAME}${SUFFIX}.tgz.gpg" 
 
   cd $DIR_ARC
-  tar cz $DIR                    \
+  tar --total --listed-incremental="$FNAME_SNAPSHOT" -czp $DIR \
     | gpg $GPG_OPT "$GPG_USERID" \
     | split $SPLIT_OPT - "${BACKUP_FILE}."
   cd -
 
-  $DIR_BIN/move_file_to_remote $PERIOD $NOW $TYPE $BACKUP_FILE $DIR_ROOT
+  $DIR_BIN/move_file_to_remote $PERIOD $NOW $DAY $TYPE $BACKUP_FILE $DIR_ROOT
   echo
   echo "Dir $DIR backed up..."
   fi

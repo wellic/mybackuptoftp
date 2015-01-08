@@ -19,6 +19,7 @@ fi
 
 PERIOD=$1
 NOW=${2:-""}
+DAY=${3:-''}
 
 ### FTP server Setup ###
 FTPD='/GREY_1TB/ToolkitVault-server-backups'
@@ -31,6 +32,9 @@ FTP="$(which lftp)"
 REMOVE_DIR="$FTPD/$PERIOD"
 if [[ ! -z $NOW ]]; then
   REMOVE_DIR="${REMOVE_DIR}/${NOW}"
+  if [[ ! -z $DAY ]]; then
+    REMOVE_DIR="${REMOVE_DIR}/${DAY}"
+  fi
 fi 
 
 #Start FTP backup using ncftp

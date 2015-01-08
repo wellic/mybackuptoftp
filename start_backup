@@ -31,10 +31,10 @@ then
   WEEK=${4:-$(date +"%w")}
   DIR_ROOT=${5:-$DEF_ROOT}
 
-  DIR_BIN="${DIR_ROOT}/bin"
-  DIR_CFG="${DIR_ROOT}/cfg"
-  DIR_ARC="${DIR_ROOT}/arc"
-  DIR_LOG="${DIR_ROOT}/log"
+  DIR_BIN="${DIR_ROOT}"/bin
+  DIR_CFG="${DIR_ROOT}"/cfg
+  DIR_ARC="${DIR_ROOT}"/arc
+  DIR_LOG="${DIR_ROOT}"/log
 
   rm -f "$DIR_LOG"/"$ERROR_FILE"
 
