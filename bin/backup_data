@@ -58,7 +58,8 @@ do
   FNAME_SNAPSHOT="${DIR_SNAP}/${DATA_NAME}.snapshot"
   echo "Snapshot: $FNAME_SNAPSHOT"
 
-  if [[ "${DAY}" = '01' || "${WEEK}" -eq 0 ]] ; then
+#  if [[ "${DAY}" = '01' || "${WEEK}" -eq 0 ]] ; then
+  if [[ "${DAY}" = '01' || "${DAY}" = '10' || "${DAY}" = '20' ]] ; then
     rm -f "$FNAME_SNAPSHOT"
   fi
 
