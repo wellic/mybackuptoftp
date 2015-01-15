@@ -53,35 +53,43 @@ for DIR in $DIRS;
 do
   if [ -d "$DIR" ] ;
   then 
-  DATA_NAME=$(basename "$DIR")
+    echo 
+    echo "Backing: $DIR"
 
-  FNAME_SNAPSHOT="${DIR_SNAP}/${DATA_NAME}.snapshot"
-  echo "Snapshot: $FNAME_SNAPSHOT"
+    DATA_NAME=$(basename "$DIR")
 
-#  if [[ "${DAY}" = '01' || "${WEEK}" -eq 0 ]] ; then
-  if [[ "${DAY}" = '01' || "${DAY}" = '10' || "${DAY}" = '20' ]] ; then
+    FNAME_SNAPSHOT="${DIR_SNAP}/${DATA_NAME}.snapshot"
+    FNAME_SNAPSHOT_FULL="$FNAME_SNAPSHOT.full"
+
+#    if [[ "${DAY}" = '01' || "${WEEK}" -eq 0 ]] ; then
+    if [[ "${DAY}" = '01' || "${DAY}" = '10' || "${DAY}" = '20' ]] ; then
+      rm -f "$FNAME_SNAPSHOT_FULL"
+    fi
     rm -f "$FNAME_SNAPSHOT"
-  fi
 
-  SUFFIX=".${DAY}"
-  if [[ ! -f "$FNAME_SNAPSHOT" ]] ; then
-    SUFFIX="${SUFFIX}.full"
-    echo 'Snapshot will be created'
-  fi
+    if [[ ! -f "$FNAME_SNAPSHOT_FULL" ]] ; then
+      echo 'Snapshot will be created'
+      SNAPSHOT="$FNAME_SNAPSHOT_FULL"
+      BACKUP_FILE="${DATA_NAME}.${DAY}.full.tgz.gpg"
+    else
+      echo "cp $FNAME_SNAPSHOT_FULL $FNAME_SNAPSHOT"
+      cp "$FNAME_SNAPSHOT_FULL" "$FNAME_SNAPSHOT"
+      SNAPSHOT="$FNAME_SNAPSHOT"
+      BACKUP_FILE="${DATA_NAME}.${DAY}.tgz.gpg"
+    fi
+    echo "Snapshot: $SNAPSHOT"
 
-  echo 
-  echo "Backing: $DIR"
-  BACKUP_FILE="${DATA_NAME}${SUFFIX}.tgz.gpg" 
+    cd $DIR_ARC
+    tar --ignore-failed-read --total --listed-incremental="$SNAPSHOT" -czp "$DIR" \
+      | gpg $GPG_OPT "$GPG_USERID" \
+      | split $SPLIT_OPT - "${BACKUP_FILE}."
+    cd -
 
-  cd $DIR_ARC
-  tar --ignore-failed-read --total --listed-incremental="$FNAME_SNAPSHOT" -czp $DIR \
-    | gpg $GPG_OPT "$GPG_USERID" \
-    | split $SPLIT_OPT - "${BACKUP_FILE}."
-  cd -
+    $DIR_BIN/move_file_to_remote $PERIOD $NOW $DAY $TYPE $BACKUP_FILE $DIR_ROOT
+    echo
+    echo "Dir $DIR backed up..."
 
-  $DIR_BIN/move_file_to_remote $PERIOD $NOW $DAY $TYPE $BACKUP_FILE $DIR_ROOT
-  echo
-  echo "Dir $DIR backed up..."
+    rm -f "$FNAME_SNAPSHOT"
   fi
 done    
 
