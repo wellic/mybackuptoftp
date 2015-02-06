@@ -1,0 +1,70 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+echo
+echo "--- Start $0 $*"
+
+exit_if_error() {
+  MESS=${2:-}
+  [[ $1 != "0" ]] && echo "Error!!! Code=$1";echo "$MESS"; exit 1
+  exit 0
+}
+
+YEAR=$(date +"%y")
+MONTH=$(date +"%m")
+DAY=$(date +"%d")
+#WEEK=$(date +"%w")
+WEEK=
+
+MODE_CLEAR=${1:-help}
+P_YEAR=${2:-}
+P_MONTH=${3:-}
+P_DAY=${4:-}
+
+[[ $# -lt 1 ]] && exit_if_error $? "Usage: $0 { full | current | force yy | force yy mm | force yy mm dd}"
+
+if [[ $MODE_CLEAR = 'force' ]] ; then
+  [[ ! -z $P_YEAR  && $P_YEAR  =~ [0-9]{2} ]] && YEAR=$P_YEAR    || YEAR=''
+  [[ ! -z $P_MONTH && $P_MONTH =~ [0-9]{2} ]] && MONTH=$P_MONTH  || MONTH=''
+  [[ ! -z $P_DAY   && $P_DAY   =~ [0-9]{2} ]] && DAY=$P_DAY      || DAY=''
+  [[ -z $MONTH ]] &&    DAY=''
+#  [[ ! -z $YEAR && -z $MONTH ]] && MONTH=''
+fi
+
+### Setup your default directories.
+DIR_ROOT=$(dirname "$0")
+DIR_ROOT=$("$DIR_ROOT"/bin/get_root_dir "$0") || exit_if_error $? "Check getting root dirs for $0"
+DIR_BIN="$DIR_ROOT"/bin
+DIR_CFG="$DIR_ROOT"/cfg
+DIR_ARC="$DIR_ROOT"/arc
+DIR_LOG="$DIR_ROOT"/log
+
+echo "$MODE_CLEAR YEAR=$YEAR MONTH=$MONTH DAY=$DAY WEEK=$WEEK"
+
+case $MODE_CLEAR in 
+        "full")
+                echo $DIR_BIN/clear_remote 
+                     $DIR_BIN/clear_remote 
+                ;;
+     "current")
+                [[ -z $YEAR || -z $MONTH ]] && exit_if_error 1 "Check year and month" 
+                echo $DIR_BIN/clear_remote $YEAR $MONTH $DAY $WEEK
+                     $DIR_BIN/clear_remote $YEAR $MONTH $DAY $WEEK
+                ;;
+       "force") 
+                [[ -z $YEAR || -z $MONTH ]] && exit_if_error 1 "Check year and month" 
+                echo $DIR_BIN/clear_remote $YEAR $MONTH $DAY $WEEK
+                     $DIR_BIN/clear_remote $YEAR $MONTH $DAY $WEEK
+                ;;
+             *) 
+                exit_if_error 1 'Uknown mode clear'
+                ;;
+esac
+echo $?
+
+exit 0
+
+
+

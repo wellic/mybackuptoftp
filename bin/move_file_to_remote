@@ -1,0 +1,55 @@
+#!/bin/bash
+
+echo
+echo "--- Start $0 $*"
+
+exit_if_error() {
+  MESS=${2:-}
+  [ $1 != "0" ] && echo "Error!!! Code=$1";echo "$MESS"; exit 1
+  exit 0
+}
+
+set -o nounset
+set -e 
+
+CNT_PARAMS=6
+[[ $# -lt $CNT_PARAMS ]] && exit_if_error $? "Must be $CNT_PARAMS parameters"
+
+### Input parameters ###
+YEAR=$1
+MONTH=$2
+DAY=$3
+WEEK=$4
+TYPE=$5
+FNAME=$6
+NOW="${YEAR}${MONTH}"
+
+### Setup your default directories.
+DIR_ROOT=$(dirname "$0")
+DIR_ROOT=$("$DIR_ROOT"/get_root_dir "$0") || exit_if_error $? "Check getting root dirs for $0"
+DIR_BIN="$DIR_ROOT"/bin
+DIR_CFG="$DIR_ROOT"/cfg
+DIR_ARC="$DIR_ROOT"/arc
+DIR_LOG="$DIR_ROOT"/log
+READER="$DIR_BIN/read_value_from_file"
+
+### FTP Setup ###
+FTP="$(which lftp)"
+FTPS=$("$READER" "$DIR_CFG/ftp/server_name.cfg") || exit_if_error $? "Check $DIR_CFG/ftp/server_name.cfg"
+FTPU=$("$READER" "$DIR_CFG/ftp/user_login.cfg" ) || exit_if_error $? "Check $DIR_CFG/ftp/user_login.cfg"
+FTPP=$("$READER" "$DIR_CFG/ftp/user_pass.cfg"  ) || exit_if_error $? "Check $DIR_CFG/ftp/user_pass.cfg"
+FTPD=$("$READER" "$DIR_CFG/ftp/root_dir.cfg"   ) || exit_if_error $? "Check $DIR_CFG/ftp/root_dir.cfg"
+
+FULLPATH="${FTPD}/${NOW}/${DAY}/${TYPE}"
+echo "Copy to remote ftp server: $FULLPATH/$FNAME.*"
+
+#Start FTP backup using ncftp9R
+$FTP -u $FTPU,$FTPP $FTPS<<EOF
+mkdir -p "${FULLPATH}"
+cd "${FULLPATH}"
+lcd "$DIR_ARC"
+mput -E -c "$FNAME.*"
+quit
+EOF
+
+exit 0

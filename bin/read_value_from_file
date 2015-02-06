@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+STATUS_OK=0
+STATUS_ERR=1
+EMPTY=''
+
+### Input parameters ###
+FILE_NAME=${1:-''}
+USE_DEFAULT=${2:-'1'}
+EXT_FILE_DEFAULT=${3:-'default'}
+
+STATUS=$STATUS_ERR
+VALUE=$EMPTY
+
+[ ! -z "$FILE_NAME" -a ! -e "$FILE_NAME" -a $USE_DEFAULT != "0" ] && FILE_NAME="$FILE_NAME.$EXT_FILE_DEFAULT"
+
+if [ ! -z "$FILE_NAME" -a -e "$FILE_NAME" ] ; then
+  VALUE=$(cat "$FILE_NAME")
+  STATUS=$STATUS_OK;
+fi
+
+echo $VALUE
+exit $STATUS

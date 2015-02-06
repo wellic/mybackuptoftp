@@ -1,0 +1,11 @@
+1) cat filename.sql.gz.gpg.* | gpg -d | gzip -d >filename.sql
+2) cat filename.tgz.gpg.* | gpg -d | tar xz -C filename
+
+Инкрементальные архивы:
+1) найти файл типа *.full.tgz.gp и распаковать как обычный
+ cat filename.{day}.full.tgz.gpg.* | gpg -d | tar -xp -C filename
+2) поочереди распаковать все нужные архивы до N-го дня
+ cat filename.{day+1}.tgz.gpg.* | gpg -d | tar --listed-incremental=/dev/null -xp -C filename
+....
+ cat filename.{day+N}.tgz.gpg.* | gpg -d | tar --listed-incremental=/dev/null -xp -C filename
+

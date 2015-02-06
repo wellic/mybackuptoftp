@@ -1,0 +1,5 @@
+For join file as once please use
+
+cat filename.zip.-* >filename.zip
+
+or equivalent command

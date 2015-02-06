@@ -1,0 +1,45 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+echo
+echo "--- Start $0 $*"
+
+exit_if_error() {
+  MESS=${2:-}
+  [[ $1 != "0" ]] && echo "Error!!! Code=$1";echo "$MESS"; exit 1
+  exit 0
+}
+
+### Input parameters ###
+YEAR=$1
+MONTH=$2
+DAY=$3
+WEEK=$4
+
+### Setup your default directories.
+DIR_ROOT=$(dirname "$0")
+DIR_ROOT=$("$DIR_ROOT"/bin/get_root_dir "$0") || exit_if_error $? "Check getting root dirs for $0"
+DIR_BIN="$DIR_ROOT"/bin
+DIR_CFG="$DIR_ROOT"/cfg
+DIR_ARC="$DIR_ROOT"/arc
+DIR_LOG="$DIR_ROOT"/log
+
+### Prepare date
+echo "YEAR=$YEAR MONTH=$MONTH DAY=$DAY WEEK=$WEEK"
+
+echo "$DIR_BIN/prepare_remote"
+"$DIR_BIN"/prepare_remote || exit_if_error $?
+
+#do all backup script
+SCRIPTS=' backup_db backup_data '
+#SCRIPTS=' backup_db  '
+#SCRIPTS=' backup_data '
+for SCRIPT in $SCRIPTS ;
+do 
+  echo "Executing: $DIR_BIN/$SCRIPT $YEAR $MONTH $DAY $WEEK"
+ "$DIR_BIN"/"$SCRIPT" $YEAR $MONTH $DAY $WEEK || exit_if_error $?
+done
+
+exit 0
