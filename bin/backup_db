@@ -35,9 +35,9 @@ DIR_SNAP="${DIR_ROOT}/snapshots"
 READER="$DIR_BIN/read_value_from_file"
 
 ### MySQL Setup ###
-DB_HOST=localhost
-DB_USER=root
-DB_PASS=Q_H9N_wzL76tCE
+DB_HOST=$($READER "$DIR_CFG/dbs/db_host.cfg") || exit_if_error $? "Check $DIR_CFG/dbs/db_host.cfg"
+DB_USER=$($READER "$DIR_CFG/dbs/db_user.cfg") || exit_if_error $? "Check $DIR_CFG/dbs/db_user.cfg"
+DB_PASS=$($READER "$DIR_CFG/dbs/db_pass.cfg") || exit_if_error $? "Check $DIR_CFG/dbs/db_pass.cfg"
 DB_EXCLUDE="${DIR_CFG}/dbs/db_excludes.cfg"
 [ ! -f "$DB_EXCLUDE" ] && DB_EXCLUDE="$DB_EXCLUDE.default"
 [ ! -f "$DB_EXCLUDE" ] && exit_if_error $? "Check $DB_EXCLUDE"
