@@ -1,50 +1,49 @@
 #!/bin/bash
-# Create individual SQL files for each database. These files
-# are imported automatically during an initial provision if
-# the databases exist per the import-sql.sh process.
 
 echo
-echo "--- Start $0"
+echo "--- Start $0 $*"
+
+exit_if_error() {
+  MESS=${2:-}
+  [ $1 != "0" ] && echo "Error!!! Code=$1";echo "$MESS"; exit 1
+  exit 0
+}
 
 set -o nounset
 set -e 
 
 TYPE="data"
 
-CNT_PARAMS=6
-if [[ $# -lt $CNT_PARAMS ]] ; then 
-  echo "Error!!! Must be $CNT_PARAMS parameters"
-  exit 1
-fi
+CNT_PARAMS=4
+[[ $# -lt $CNT_PARAMS ]] && exit_if_error $? "Must be $CNT_PARAMS parameters"
 
 ### Input parameters ###
-PERIOD=$1
-YEAR=$2
-MONTH=$3
-DAY=$4
-WEEK=$5
-DIR_ROOT=$6
+YEAR=$1
+MONTH=$2
+DAY=$3
+WEEK=$4
 
-NOW="${YEAR}${MONTH}"
-
-### Directories ###
-DIR_BIN="${DIR_ROOT}/bin"
-DIR_CFG="${DIR_ROOT}/cfg"
-DIR_ARC="${DIR_ROOT}/arc"
-DIR_LOG="${DIR_ROOT}/log"
+### Setup your default directories.
+DIR_ROOT=$(dirname "$0")
+DIR_ROOT=$("$DIR_ROOT"/get_root_dir "$0") || exit_if_error $? "Check getting root dirs for $0"
+DIR_BIN="$DIR_ROOT"/bin
+DIR_CFG="$DIR_ROOT"/cfg
+DIR_ARC="$DIR_ROOT"/arc
+DIR_LOG="$DIR_ROOT"/log
 DIR_SNAP="${DIR_ROOT}/snapshots"
+READER="$DIR_BIN/read_value_from_file"
+
+echo "Loaded list directories from ${DIR_CFG}/dirs/dirs.cfg"
 
 ### GPG settings ###
-GPG_USERID=$(cat $DIR_CFG/gpg_userid.txt)
+GPG_USERID=$($READER "$DIR_CFG/arcs/gpg_userid.cfg") || exit_if_error $? "Check $DIR_CFG/arcs/gpg_userid.cfg"
 GPG_OPT="-e -r"
-
 ### Split settings ###
-SPLIT_OPT="-d -a 3 -b $(cat $DIR_CFG/split_size.txt)"
-
+SPLIT_SIZE=$($READER "$DIR_CFG/arcs/split_size.cfg") || exit_if_error $? "Check $DIR_CFG/arcs/split_size.cfg"
+SPLIT_OPT='-d -a 3 -b '"$SPLIT_SIZE"
 ### System Setup ###
 GZIP_OPT=-c9
-DIRS=$(cat "${DIR_CFG}/dirs_${PERIOD}.lst")
-echo "Loaded list directories from ${DIR_CFG}/dirs_${PERIOD}.lst"
+DIRS=$($READER "$DIR_CFG/dirs/dirs.cfg") || exit_if_error $? "Check $DIR_CFG/dirs/dirs.cfg"
 
 #---------------------------------------------------
 [ ! -d $DIR_ARC ] && mkdir -p $DIR_ARC || :
@@ -54,14 +53,13 @@ do
   if [ -d "$DIR" ] ;
   then 
     echo 
-    echo "Backing: $DIR"
+    echo "Backup: $DIR"
 
     DATA_NAME=$(basename "$DIR")
 
     FNAME_SNAPSHOT="${DIR_SNAP}/${DATA_NAME}.snapshot"
     FNAME_SNAPSHOT_FULL="$FNAME_SNAPSHOT.full"
 
-#    if [[ "${DAY}" = '01' || "${WEEK}" -eq 0 ]] ; then
     if [[ "${DAY}" = '01' || "${DAY}" = '10' || "${DAY}" = '20' ]] ; then
       rm -f "$FNAME_SNAPSHOT_FULL"
     fi
@@ -85,7 +83,7 @@ do
       | split $SPLIT_OPT - "${BACKUP_FILE}."
     cd -
 
-    $DIR_BIN/move_file_to_remote $PERIOD $NOW $DAY $TYPE $BACKUP_FILE $DIR_ROOT
+    $DIR_BIN/move_file_to_remote $YEAR $MONTH $DAY $WEEK $TYPE $BACKUP_FILE 
     echo
     echo "Dir $DIR backed up..."
 

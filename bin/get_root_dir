@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+# Initial param
+SCRIPT=${1:-$0}
+
+getPwd() {
+  TEST_DIR=$( dirname "${1:-$PWD}" )
+  echo $( cd "$TEST_DIR" && pwd )
+}
+
+STATUS_OK=0
+STATUS_ERR=1
+STATUS=$STATUS_OK
+
+SCRIPT_NAME=$(basename "$SCRIPT")
+SCRIPT_DIR=$( getPwd "$0" )
+DIR_ROOT=$( getPwd "$SCRIPT_DIR" )
+[ -f "$DIR_ROOT/$SCRIPT_NAME" -o -f "$DIR_ROOT/bin/$SCRIPT_NAME" ] || STATUS=$STATUS_ERR
+
+echo "$DIR_ROOT"
+exit $STATUS

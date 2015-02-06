@@ -1,51 +1,53 @@
 #!/bin/bash
-# Create individual SQL files for each database. These files
-# are imported automatically during an initial provision if
-# the databases exist per the import-sql.sh process.
+# Create individual SQL files for each database.
 
 echo
 echo "--- Start $0 $*"
+
+exit_if_error() {
+  MESS=${2:-}
+  [[ $1 != "0" ]] && echo "Error!!! Code=$1";echo "$MESS"; exit 1
+  exit 0
+}
 
 set -o nounset
 set -e 
 
 TYPE="db"
 
-CNT_PARAMS=6
-if [[ $# -lt $CNT_PARAMS ]] ; then 
-  echo "Error!!! Must be $CNT_PARAMS parameters"
-  exit 1
-fi
+CNT_PARAMS=4
+[[ $# -lt $CNT_PARAMS ]] && exit_if_error $? "Must be $CNT_PARAMS parameters"
 
 ### Input parameters ###
-PERIOD=$1
-YEAR=$2
-MONTH=$3
-DAY=$4
-WEEK=$5
-DIR_ROOT=$6
+YEAR=$1
+MONTH=$2
+DAY=$3
+WEEK=$4
 
-NOW="${YEAR}${MONTH}"
-
-### Directories ###
-DIR_BIN="${DIR_ROOT}/bin"
-DIR_CFG="${DIR_ROOT}/cfg"
-DIR_ARC="${DIR_ROOT}/arc"
-DIR_LOG="${DIR_ROOT}/log"
+### Setup your default directories.
+DIR_ROOT=$(dirname "$0")
+DIR_ROOT=$("$DIR_ROOT"/get_root_dir "$0") || exit_if_error $? "Check getting root dirs for $0"
+DIR_BIN="$DIR_ROOT"/bin
+DIR_CFG="$DIR_ROOT"/cfg
+DIR_ARC="$DIR_ROOT"/arc
+DIR_LOG="$DIR_ROOT"/log
+DIR_SNAP="${DIR_ROOT}/snapshots"
+READER="$DIR_BIN/read_value_from_file"
 
 ### MySQL Setup ###
 DB_HOST=localhost
 DB_USER=root
 DB_PASS=Q_H9N_wzL76tCE
-DB_EXCLUDE="${DIR_CFG}/db_excludes.lst"
+DB_EXCLUDE="${DIR_CFG}/dbs/db_excludes.cfg"
+[ ! -f "$DB_EXCLUDE" ] && DB_EXCLUDE="$DB_EXCLUDE.default"
+[ ! -f "$DB_EXCLUDE" ] && exit_if_error $? "Check $DB_EXCLUDE"
 
 ### GPG settings ###
-GPG_USERID=$(cat $DIR_CFG/gpg_userid.txt)
+GPG_USERID=$($READER "$DIR_CFG/arcs/gpg_userid.cfg") || exit_if_error $? "Check $DIR_CFG/arcs/gpg_userid.cfg"
 GPG_OPT="-e -r"
-
 ### Split settings ###
-SPLIT_OPT="-d -a 3 -b $(cat $DIR_CFG/split_size.txt)"
-
+SPLIT_SIZE=$($READER "$DIR_CFG/arcs/split_size.cfg") || exit_if_error $? "Check $DIR_CFG/arcs/split_size.cfg"
+SPLIT_OPT='-d -a 3 -b '"$SPLIT_SIZE"
 ### System Setup ###
 MYSQLDUMP_OPT='--compress'
 GREP_OPT="-v -f $DB_EXCLUDE -x"
@@ -54,12 +56,10 @@ GZIP_OPT=-c9
 #---------------------------------------------------
 [ ! -d $DIR_ARC ] && mkdir -p $DIR_ARC || :
 
-echo $(dirname $0)
-echo --- See exists DBs ---
+echo "Exists DBs:"
 DB_AUTH="-h ${DB_HOST} -u ${DB_USER} -p${DB_PASS}"
 echo "mysql -e 'show databases'"
 
-echo --- Dump ---
 mysql -e 'show databases' $DB_AUTH | sort | grep $GREP_OPT | \
 while read DB_NAME; 
 do
@@ -74,8 +74,10 @@ do
     | split $SPLIT_OPT - "${BACKUP_FILE}."
   cd -
 
-  $DIR_BIN/move_file_to_remote $PERIOD $NOW $DAY $TYPE $BACKUP_FILE $DIR_ROOT
-  echo
-  echo "Database $DB_NAME backed up..."
+  $DIR_BIN/move_file_to_remote $YEAR $MONTH $DAY $WEEK $TYPE $BACKUP_FILE 
 
+  echo
+  echo "Database $DB_NAME dumped up..."
 done
+
+exit 0

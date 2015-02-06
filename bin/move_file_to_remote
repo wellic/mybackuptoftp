@@ -1,46 +1,49 @@
 #!/bin/bash
-# Create individual SQL files for each database. These files
-# are imported automatically during an initial provision if
-# the databases exist per the import-sql.sh process.
-
 
 echo
 echo "--- Start $0 $*"
+
+exit_if_error() {
+  MESS=${2:-}
+  [ $1 != "0" ] && echo "Error!!! Code=$1";echo "$MESS"; exit 1
+  exit 0
+}
 
 set -o nounset
 set -e 
 
 CNT_PARAMS=6
-if [[ $# -lt $CNT_PARAMS ]] ; then 
-  echo "Error!!! Must be $CNT_PARAMS parameters"
-  exit 1
-fi
+[[ $# -lt $CNT_PARAMS ]] && exit_if_error $? "Must be $CNT_PARAMS parameters"
 
 ### Input parameters ###
-PERIOD=$1
-NOW=$2
+YEAR=$1
+MONTH=$2
 DAY=$3
-TYPE=$4
-FNAME=$5
-DIR_ROOT=$6
+WEEK=$4
+TYPE=$5
+FNAME=$6
+NOW="${YEAR}${MONTH}"
 
-### FTP server Setup ###
-FTPD='/GREY_1TB/ToolkitVault-server-backups'
-FTPS='office.giantleaplab.com'
-FTPU='tv-backuper'
-FTPP='xn->52s4_dAHND#4'
+### Setup your default directories.
+DIR_ROOT=$(dirname "$0")
+DIR_ROOT=$("$DIR_ROOT"/get_root_dir "$0") || exit_if_error $? "Check getting root dirs for $0"
+DIR_BIN="$DIR_ROOT"/bin
+DIR_CFG="$DIR_ROOT"/cfg
+DIR_ARC="$DIR_ROOT"/arc
+DIR_LOG="$DIR_ROOT"/log
+READER="$DIR_BIN/read_value_from_file"
+
+### FTP Setup ###
 FTP="$(which lftp)"
+FTPS=$("$READER" "$DIR_CFG/ftp/server_name.cfg") || exit_if_error $? "Check $DIR_CFG/ftp/server_name.cfg"
+FTPU=$("$READER" "$DIR_CFG/ftp/user_login.cfg" ) || exit_if_error $? "Check $DIR_CFG/ftp/user_login.cfg"
+FTPP=$("$READER" "$DIR_CFG/ftp/user_pass.cfg"  ) || exit_if_error $? "Check $DIR_CFG/ftp/user_pass.cfg"
+FTPD=$("$READER" "$DIR_CFG/ftp/root_dir.cfg"   ) || exit_if_error $? "Check $DIR_CFG/ftp/root_dir.cfg"
 
-### Directories ###
-DIR_BIN="${DIR_ROOT}/bin"
-DIR_CFG="${DIR_ROOT}/cfg"
-DIR_ARC="${DIR_ROOT}/arc"
-DIR_LOG="${DIR_ROOT}/log"
+FULLPATH="${FTPD}/${NOW}/${DAY}/${TYPE}"
+echo "Copy to remote ftp server: $FULLPATH/$FNAME.*"
 
-FULLPATH="${FTPD}/${PERIOD}/${NOW}/${DAY}/${TYPE}"
-echo "Copy to remote $FULLPATH/$FNAME.*"
-
-#Start FTP backup using ncftp
+#Start FTP backup using ncftp9R
 $FTP -u $FTPU,$FTPP $FTPS<<EOF
 mkdir -p "${FULLPATH}"
 cd "${FULLPATH}"
@@ -48,3 +51,5 @@ lcd "$DIR_ARC"
 mput -E -c "$FNAME.*"
 quit
 EOF
+
+exit 0

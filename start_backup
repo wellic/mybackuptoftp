@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo
+echo "--- Start $0 $*"
+
 set -o nounset
 set -e 
 
@@ -8,39 +11,38 @@ ERROR_FILE='backup_error.log'
 MSG_ERROR='Error! Check backup'
 
 echo
-echo '------------------------------------------------'
-echo "$0"
-echo 'Start:' $(date +"%D %T")
-echo '------------------------------------------------'
+echo '---'
+echo "$0 $*"
+echo 'Start at '$(date +"%D %T")
+echo '---'
 echo
 
-### Setup your defauly root of directory
-DEF_ROOT='/root/server-back-scripts'
+### Setup your default directories.
+DIR_ROOT=$(dirname "$0")
+DIR_ROOT=$("$DIR_ROOT"/bin/get_root_dir "$0") || exit_if_error $? "Check getting root dirs for $0"
+DIR_BIN="$DIR_ROOT"/bin
+DIR_CFG="$DIR_ROOT"/cfg
+DIR_ARC="$DIR_ROOT"/arc
+DIR_LOG="$DIR_ROOT"/log
 
-START_DIR=$PWD
-
-if [[ -d "$DEF_ROOT/bin" && -d "$DEF_ROOT/cfg" ]]; 
+if [ -d "$DIR_BIN" -a -d "$DIR_CFG"  -a -d "$DIR_ARC"  -a -d "$DIR_LOG" ]; 
 then
-
-  cd "$DEF_ROOT"
   
   ### Input parameters ###
   YEAR=${1:-$(date +"%y")}
   MONTH=${2:-$(date +"%m")}
   DAY=${3:-$(date +"%d")}
   WEEK=${4:-$(date +"%w")}
-  DIR_ROOT=${5:-$DEF_ROOT}
-
-  DIR_BIN="${DIR_ROOT}"/bin
-  DIR_CFG="${DIR_ROOT}"/cfg
-  DIR_ARC="${DIR_ROOT}"/arc
-  DIR_LOG="${DIR_ROOT}"/log
 
   rm -f "$DIR_LOG"/"$ERROR_FILE"
+  echo "$DIR_ROOT/full_backup $YEAR $MONTH $DAY $WEEK"
+  "$DIR_ROOT"/full_backup $YEAR $MONTH $DAY $WEEK
 
-  $DIR_ROOT/full_backup $YEAR $MONTH $DAY $WEEK "$DIR_ROOT"
+  if [[ $? != "0" ]] ; then
+    echo "Error when 'full_backup $YEAR $MONTH $DAY $WEEK'. Check log" | mail -s "$ERROR_MESS" "$MAIL_TO"
+  fi
 
-  if [[ -f "${DIR_LOG}/${ERROR_FILE}" ]] ; then
+  if [[ -f "$DIR_LOG/$ERROR_FILE" ]] ; then
     cat "$DIR_LOG"/"$ERROR_FILE" | mail -s "$ERROR_MESS" "$MAIL_TO"
   fi
 
@@ -48,12 +50,11 @@ else
   echo 'It war error when backup. Check start directory.' | mail -s "$ERROR_MESS" "$MAIL_TO"
 fi
 
-cd "$START_DIR"
-
-
 echo
-echo '------------------------------------------------'
+echo '---'
 echo "$0"
-echo 'Finish:' $(date +"%D %T")
-echo '------------------------------------------------'
+echo 'Finish at '$(date +"%D %T")
+echo '---'
 echo
+
+exit 0

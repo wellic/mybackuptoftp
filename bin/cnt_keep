@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -o nounset
+set -e 
+
+DIR_ROOT=$(dirname "$0")
+DIR_ROOT=$("$DIR_ROOT"/get_root_dir "$0") || exit_if_error $? "Check getting root dirs for $0"
+
+DIR_BIN="$DIR_ROOT"/bin
+
+[ "DIR_BIN"/is_test_user ] && CNT=1 || CNT=3
+echo $CNT

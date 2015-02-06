@@ -1,39 +1,48 @@
 #!/bin/bash
-# Create individual SQL files for each database. These files
-# are imported automatically during an initial provision if
-# the databases exist per the import-sql.sh process.
 
-echo "--- Start $0"
+echo
+echo "--- Start $0 $*"
+
+exit_if_error() {
+  MESS=${2:-}
+  [[ $1 != "0" ]] && echo "Error!!! Code=$1";echo "$MESS"; exit 1
+  exit 0
+}
 
 set -o nounset
 set -e 
 
-print_help() {
-  echo "Usage: $0 NAME_OF_PERIOD [yymmdd]"
-}
+#CNT_PARAMS=2
+#[[ $# -lt $CNT_PARAMS ]] && exit_if_error $? "Must be $CNT_PARAMS parameters"
 
-if [[ $# -eq 0 ]]; then
-  print_help
-  exit 1
-fi
+### Input parameters ###
+YEAR=${1:-}
+MONTH=${2:-}
+DAY=${3:-}
+WEEK=${4:-}
+NOW="${YEAR}${MONTH}"
 
-PERIOD=$1
-NOW=${2:-""}
-DAY=${3:-''}
+### Setup your default directories.
+DIR_ROOT=$(dirname "$0")
+DIR_ROOT=$("$DIR_ROOT"/get_root_dir "$0") || exit_if_error $? "Check getting root dirs for $0"
+DIR_BIN="$DIR_ROOT"/bin
+DIR_CFG="$DIR_ROOT"/cfg
+DIR_ARC="$DIR_ROOT"/arc
+DIR_LOG="$DIR_ROOT"/log
+READER="$DIR_BIN/read_value_from_file"
 
-### FTP server Setup ###
-FTPD='/GREY_1TB/ToolkitVault-server-backups'
-FTPS='office.giantleaplab.com'
-FTPU='tv-backuper'
-FTPP='xn->52s4_dAHND#4'
-FTP_OPT='-c -E'
+### FTP Setup ###
 FTP="$(which lftp)"
+FTPS=$("$READER" "$DIR_CFG/ftp/server_name.cfg") || exit_if_error $? "Check $DIR_CFG/ftp/server_name.cfg"
+FTPU=$("$READER" "$DIR_CFG/ftp/user_login.cfg" ) || exit_if_error $? "Check $DIR_CFG/ftp/user_login.cfg"
+FTPP=$("$READER" "$DIR_CFG/ftp/user_pass.cfg"  ) || exit_if_error $? "Check $DIR_CFG/ftp/user_pass.cfg"
+FTPD=$("$READER" "$DIR_CFG/ftp/root_dir.cfg"   ) || exit_if_error $? "Check $DIR_CFG/ftp/root_dir.cfg"
 
-REMOVE_DIR="$FTPD/$PERIOD"
+REMOVE_DIR="$FTPD"
 if [[ ! -z $NOW ]]; then
-  REMOVE_DIR="${REMOVE_DIR}/${NOW}"
+  REMOVE_DIR="$REMOVE_DIR/$NOW"
   if [[ ! -z $DAY ]]; then
-    REMOVE_DIR="${REMOVE_DIR}/${DAY}"
+    REMOVE_DIR="$REMOVE_DIR/$DAY"
   fi
 fi 
 
@@ -41,9 +50,10 @@ fi
 echo "$FTP -u $FTPU,**** $FTPS"
 echo "rm -rf $REMOVE_DIR"
 
-$FTP -u $FTPU,$FTPP $FTPS<<EOF
+$($FTP -u $FTPU,$FTPP $FTPS<<EOF
 rm -rf "$REMOVE_DIR"
 quit
 EOF
+) || exit_if_error $? "Can not remove $REMOVE_DIR"
 
 exit 0
