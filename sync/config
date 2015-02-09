@@ -9,35 +9,50 @@
 [branch "master"]
 	remote = origin
 	merge = refs/heads/master
-[alias]
-w-update = "! f(){ \
- fix=${1:-fix} \
- && cfg=${2:-cfg} \
- && master=${3:-master} \
- && src1=origin\
- && src1_rbranch=master \
- && src2=gh \
- && src2_lbranch=master_gh \
- && src2_rbranch=master \
- && showlog=show \
- git w-update-default $fix $cfg $master $src1 $src1_rbranch $src2 $src2_lbranch $src2_rbranch $showlog \
-;} ;f"
-
-w-upload = "! f(){ \
- fix=${1:-fix} \
- && cfg=${2:-cfg} \
- && master=${3:-master} \
- && src1=origin\
- && src1_rbranch=master \
- && src2=gh \
- && src2_lbranch=master_gh \
- && src2_rbranch=master \
- && showlog=show \
- git w-upload-default $fix $cfg $master $src1 $src1_rbranch $src2 $src2_lbranch $src2_rbranch $showlog \
-;} ;f"
 [remote "gh"]
 	url = git@github.com:wellic/mybackuptoftp.git
 	fetch = +refs/heads/*:refs/remotes/gh/*
 [branch "master_gh"]
 	remote = gh
 	merge = refs/heads/master
+[alias]
+w-update-extcmd = "! f(){ \
+ fix=${1:-fix} \
+ && cfg=${2:-cfg} \
+ && master=${3:-master} \
+ && src1=${4:-origin}\
+ && src1_rbranch=${5:-master} \
+ && src2=${6:-gh} \
+ && src2_lbranch=${7:-master_gh} \
+ && src2_rbranch=${8:-master} \
+ && showlog=${9:-show} \
+ && git checkout $src2_rbranch \
+ && git merge $master \
+ && git push $src2 $src2_lbranch:$src2_rbranch \
+;} ;f"
+
+w-update = "! f(){ \
+ fix=${1:-fix} \
+ && cfg=${2:-cfg} \
+ && master=${3:-master} \
+ && src1=${4:-origin}\
+ && src1_rbranch=${5:-master} \
+ && src2=${6:-gh} \
+ && src2_lbranch=${7:-master_gh} \
+ && src2_rbranch=${8:-master} \
+ && showlog=${9:-show} \
+ && git w-update-default $fix $cfg $master $src1 $src1_rbranch $src2 $src2_lbranch $src2_rbranch $showlog \
+;} ;f"
+
+w-upload = "! f(){ \
+ fix=${1:-fix} \
+ && cfg=${2:-cfg} \
+ && master=${3:-master} \
+ && src1=${4:-origin}\
+ && src1_rbranch=${5:-master} \
+ && src2=${6:-gh} \
+ && src2_lbranch=${7:-master_gh} \
+ && src2_rbranch=${8:-master} \
+ && showlog=${9:-show} \
+ && git w-upload-default $fix $cfg $master $src1 $src1_rbranch $src2 $src2_lbranch $src2_rbranch $showlog \
+;} ;f"
