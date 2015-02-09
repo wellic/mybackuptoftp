@@ -26,7 +26,8 @@ w-update-extcmd = "! f(){ \
  && src2_lbranch=${7:-master_gh} \
  && src2_rbranch=${8:-master} \
  && showlog=${9:-show} \
- && git checkout $src2_rbranch \
+ && echo \"= w-update-extcmd $fix $cfg $master $src1 $src1_rbranch $src2 $src2_lbranch $src2_rbranch $showlog\" \
+ && git checkout $src2_lbranch \
  && git merge $master \
  && git push $src2 $src2_lbranch:$src2_rbranch \
 ;} ;f"
