@@ -1,0 +1,43 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = git@git.giantleaplab.com:internal-projects/server-back-scripts.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+[alias]
+w-update = "! f(){ \
+ fix=${1:-fix} \
+ && cfg=${2:-cfg} \
+ && master=${3:-master} \
+ && src1=origin\
+ && src1_rbranch=master \
+ && src2=gh \
+ && src2_lbranch=master_gh \
+ && src2_rbranch=master \
+ && showlog=show \
+ git w-update-default $fix $cfg $master $src1 $src1_rbranch $src2 $src2_lbranch $src2_rbranch $showlog \
+;} ;f"
+
+w-upload = "! f(){ \
+ fix=${1:-fix} \
+ && cfg=${2:-cfg} \
+ && master=${3:-master} \
+ && src1=origin\
+ && src1_rbranch=master \
+ && src2=gh \
+ && src2_lbranch=master_gh \
+ && src2_rbranch=master \
+ && showlog=show \
+ git w-upload-default $fix $cfg $master $src1 $src1_rbranch $src2 $src2_lbranch $src2_rbranch $showlog \
+;} ;f"
+[remote "gh"]
+	url = git@github.com:wellic/mybackuptoftp.git
+	fetch = +refs/heads/*:refs/remotes/gh/*
+[branch "master_gh"]
+	remote = gh
+	merge = refs/heads/master
