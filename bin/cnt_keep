@@ -8,5 +8,6 @@ DIR_ROOT=$("$DIR_ROOT"/get_root_dir "$0") || exit_if_error $? "Check getting roo
 
 DIR_BIN="$DIR_ROOT"/bin
 
-[ "DIR_BIN"/is_test_user ] && CNT=1 || CNT=3
+CNT=3
+#[ "DIR_BIN"/is_test_user ] && CNT=3 || CNT=3
 echo $CNT
