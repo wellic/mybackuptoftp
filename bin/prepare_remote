@@ -42,14 +42,17 @@ EOF
 CNT_KEEP=$("$DIR_BIN/cnt_keep")
 #found keeping dir
 if [[ ! -z "$DIRS" ]]; then echo 'Found dirs:'; fi
-IND=$((-$CNT_KEEP))
+IND=$(( 0-$CNT_KEEP ))
+if [[ $IND -lt 0 ]]; then 
 for DIR in $DIRS;
 do 
   IND=$((IND+1))
   echo "$IND: $DIR"
 done
+fi
 
 #remove dirs
+if [[ $IND -gt 0 ]]; then 
 CNT=0
 for DIR in $DIRS;
 do 
@@ -63,5 +66,6 @@ do
   quit
 EOF
 done 
+fi
 
 exit 0
